@@ -1,0 +1,8 @@
+@font-face {
+  font-family: 'hacksawui';
+  src: url('../font/hacksawui_regular.ttf');
+}
+
+body {
+	font-family: 'hacksawui';
+}
