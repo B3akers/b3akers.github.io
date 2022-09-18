@@ -1,15 +1,19 @@
-const winsTableValues = [0,
-				         50,
-				         100,
-				         200,
-				         300,
-				         500,
-				         1000,
-				         2500,
-				         5000,
-				         7500,
-				         10000,
-				         12500];
+const winsTableValues = [
+	0,
+	50,
+	100,
+	200,
+	300,
+	400,
+	500,
+	1000,
+	1500,
+	2500,
+	5000,
+	7500,
+	10000,
+	12500
+];
 						 
 const deadBonusWildsTableValues = [
 	5,
@@ -41,135 +45,6 @@ const bonusBuyPrice = [
 	200,
 	400
 ];
-
-function toPercentString(percent) {
-	let multi = 0;
-	percent *= 100.0;
-	
-	while(percent < 10) {
-		percent *= 10.0;
-		if(multi > 0)
-			multi *= 10.0;
-		else
-			multi = 10.0;
-	}
-	
-	percent = Math.round(percent);
-	if(multi > 0)
-		percent /= multi;
-		
-	return `${percent}%`;
-}
-
-function toChanceString(percent) {
-	return `chance 1 in ${ Math.round(1.0 / percent) } (${toPercentString(percent)})`;
-}
-
-function calculateWinTable(table) {
-	let spinCount = 0;
-	let spinXCount = 0;
-	
-	let currentWinTable = [];
-	for(let i = 0; i < winsTableValues.length; i++) {
-		currentWinTable[i] = 0;
-	}
-	
-	for (let key in table) {
-		let count = table[key];
-		
-		for(let i = 0; i < winsTableValues.length; i++) {
-			if(winsTableValues[i] == 0) {
-				if(key == 0)
-					currentWinTable[i] += count;
-			} else if (key >= winsTableValues[i]) {
-				currentWinTable[i] += count;
-			}	
-		}
-		
-		spinCount += count;
-		spinXCount += (key * count);
-	}
-		
-	return {spinCount: spinCount, spinXCount: spinXCount, winTable: currentWinTable};
-}
-
-function fillTableStatsForWinTable(stats, table) {
-	for(let i = 0; i < table.winTable.length; i++) {
-		let main = document.createElement('div');
-		main.classList.add('align-to-edge');
-		
-		let xText = 'X' + (winsTableValues[i] > 0 ? '+' : '');
-		
-		let span1 = document.createElement('span');
-		span1.innerText = `${winsTableValues[i]}${xText}:`;
-	
-		let span2 = document.createElement('span');
-		span2.innerText = table.winTable[i] > 0 ? toChanceString(table.winTable[i] / table.spinCount) : 'None';
-		
-		main.appendChild(span1);
-		main.appendChild(span2);
-		stats.appendChild(main);
-	}
-}
-
-function fillForChanceArray(stats, array) {
-	let total = 0;
-	
-	for(let i = 0; i < array.length; i++) {
-		total += array[i];
-	}
-	
-	const values = stats.querySelectorAll('.align-to-edge');
-		
-	for(let i = 0; i < array.length; i++) {
-		values[i].querySelectorAll('span')[1].innerText = toChanceString(array[i] / total);
-	}
-}
-
-function fillForDeadArray(stats, table, tableValues) {
-	
-	let values = [];
-	for(let i = 0; i < tableValues.length; i++) {
-		values[i] = 0;
-	}
-	
-	let total = 0;
-	
-	for(let key in table) {
-		let count = table[key];
-		
-		for(let i = 0; i < tableValues.length; i++) {		
-			if(i == tableValues.length - 1) {
-				if(key >= tableValues[i]) {
-					values[i] += count;
-				}
-			}else if(key >= tableValues[i] && key < tableValues[i + 1]) {
-				values[i] += count;
-			}
-		}
-		
-		total += count;
-	}
-	
-	for(let i = 0; i < tableValues.length; i++) {
-		let main = document.createElement('div');
-		main.classList.add('align-to-edge');
-				
-		let span1 = document.createElement('span');
-		
-		if(i == tableValues.length - 1) 
-			span1.innerText = `${tableValues[i]}:`;
-		else
-			span1.innerText = `${tableValues[i]}-${tableValues[i + 1]}:`;
-	
-		let span2 = document.createElement('span');
-		span2.innerText = values[i] > 0 ? toChanceString(values[i] / total) : 'None';
-		
-		main.appendChild(span1);
-		main.appendChild(span2);
-		stats.appendChild(main);
-	}
-}
 
 fetch('data/wanted.json')
 .then((response) => response.json())
@@ -241,13 +116,13 @@ fetch('data/wanted.json')
 	fillForChanceArray(bonusDuelReelStats, data._duelBonusDuelRealChance);
 	
 	const deadWildsChanceStats = content.querySelector('.stat-box[data-name="dead-wilds-chance"] .box-content');
-	fillForDeadArray(deadWildsChanceStats, data._deadBonusWilds, deadBonusWildsTableValues);
+	fillForRangeArray(deadWildsChanceStats, data._deadBonusWilds, deadBonusWildsTableValues);
 	
 	const deadMultiChanceStats = content.querySelector('.stat-box[data-name="dead-multi-chance"] .box-content');
-	fillForDeadArray(deadMultiChanceStats, data._deadBonusMulti, deadBonusMultiTableValues);
+	fillForRangeArray(deadMultiChanceStats, data._deadBonusMulti, deadBonusMultiTableValues);
 
 	const deadWildsMultiChanceStats = content.querySelector('.stat-box[data-name="dead-wilds-multi-chance"] .box-content');
-	fillForDeadArray(deadWildsMultiChanceStats, data._deadBonusAll, deadBonusWildsMultiTableValues);
+	fillForRangeArray(deadWildsMultiChanceStats, data._deadBonusAll, deadBonusWildsMultiTableValues);
 	
 	const rtpStats = content.querySelectorAll('.stat-box[data-name="rtp-data"] .align-to-edge');
 	rtpStats[0].querySelectorAll('span')[1].innerText = toPercentString(data._totalWin / (data._totalSpins * 20));
