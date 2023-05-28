@@ -75,6 +75,38 @@ function fillTableStatsForWinTable(stats, table, array) {
 	}
 }
 
+function fillForChanceDictionary(stats, table) {	
+	let total = 0;
+	let values = [];
+	
+	for(let key in table) {
+		let count = table[key];	
+
+		values.push([key, count]);
+		
+		total += count;
+	}
+	
+	values.sort(function(a, b) {
+		return b[1] - a[1];
+	});
+	
+	for(let i = 0; i < values.length; i++) {
+		let main = document.createElement('div');
+		main.classList.add('align-to-edge');
+		
+		let span1 = document.createElement('span');
+		span1.innerText = `${values[i][0]}:`;
+		
+		let span2 = document.createElement('span');
+		span2.innerText = values[i][1] > 0 ? toChanceString(values[i][1] / total) : 'None';
+		
+		main.appendChild(span1);
+		main.appendChild(span2);
+		stats.appendChild(main);
+	}
+}
+
 function fillForRangeArray(stats, table, tableValues) {
 	
 	let values = [];
